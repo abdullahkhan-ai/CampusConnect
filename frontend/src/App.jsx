@@ -790,40 +790,6 @@ aria-label="Dismiss notification"
 
 )}
 
-{error && (
-
-<div className="error-banner" role="alert">
-
-<AlertCircle size={19} />
-
-<div>
-
-<strong>Something went wrong</strong>
-
-<p>{error}</p>
-
-</div>
-
-<button
-
-className="button button-secondary"
-
-onClick={loadEvents}
-
-disabled={loading}
-
->
-
-<RefreshCw size={15} />
-
-Retry
-
-</button>
-
-</div>
-
-)}
-
 {activePage === "Dashboard" && (
 
 <>
