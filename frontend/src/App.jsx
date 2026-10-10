@@ -466,13 +466,13 @@ setError("");
 
 try {
 
-const response = await fetch("http://campusconnect-hraj.onrender.com/api/admin/verify", {
-
-method: "GET",
-
-headers: { "x-admin-key": key },
-
-});
+const response = await fetch(
+  "https://campusconnect-hraj.onrender.com/api/admin/verify",
+  {
+    method: "GET",
+    headers: { "x-admin-key": key },
+  }
+);
 
 const result = await response.json().catch(() => ({}));
 

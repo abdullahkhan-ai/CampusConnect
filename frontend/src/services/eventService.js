@@ -1,6 +1,7 @@
+const API_BASE_URL = "https://campusconnect-hraj.onrender.com/api";
 
-const API_URL = "http://localhost:5000/api/events";
-const REGISTRATIONS_API_URL = "http://localhost:5000/api/registrations";
+const API_URL = `${API_BASE_URL}/events`;
+const REGISTRATIONS_API_URL = `${API_BASE_URL}/registrations`;
 
 let adminKey = "";
 
