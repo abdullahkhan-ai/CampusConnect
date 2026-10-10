@@ -466,7 +466,7 @@ setError("");
 
 try {
 
-const response = await fetch("http://localhost:5000/api/admin/verify", {
+const response = await fetch("http://campusconnect-hraj.onrender.com/api/admin/verify", {
 
 method: "GET",
 
