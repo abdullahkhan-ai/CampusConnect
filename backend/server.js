@@ -11,30 +11,51 @@ const registrationRoutes = require("./routes/registrationRoutes");
 const galleryRoutes = require("./routes/galleryRoutes");
 
 const app = express();
-
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// CORS: Allow the deployed CampusConnect frontend and local development.
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "https://campus-connect-delta-one.vercel.app",
+];
+
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(
+    process.env.FRONTEND_URL.replace(/\/+$/, "")
+  );
+}
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "http://127.0.0.1:5173",
-    ],
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      console.warn("CORS blocked origin:", origin);
+      return callback(new Error("Origin not allowed by CORS"));
+    },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "x-admin-key", "Authorization"],
+    allowedHeaders: [
+      "Content-Type",
+      "x-admin-key",
+      "Authorization",
+    ],
+    optionsSuccessStatus: 204,
   })
 );
 
+// Parse JSON requests.
 app.use(express.json({ limit: "1mb" }));
 
-// Serve uploaded gallery images
+// Serve uploaded gallery images.
 app.use(
   "/uploads",
   express.static(path.join(__dirname, "uploads"))
 );
 
-// Health check
+// API root.
 app.get("/", (_req, res) => {
   res.json({
     success: true,
@@ -42,6 +63,7 @@ app.get("/", (_req, res) => {
   });
 });
 
+// Health check.
 app.get("/api/health", (_req, res) => {
   res.json({
     success: true,
@@ -53,14 +75,14 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
-// API routes
+// API routes.
 app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/registrations", registrationRoutes);
 app.use("/api/gallery", galleryRoutes);
 
-// Admin verification
-app.get("/api/admin/verify", async (req, res) => {
+// Verify admin key.
+app.get("/api/admin/verify", (req, res) => {
   try {
     const adminKey = req.headers["x-admin-key"];
     const configuredAdminKey = process.env.ADMIN_KEY;
@@ -96,7 +118,7 @@ app.get("/api/admin/verify", async (req, res) => {
   }
 });
 
-// Start server after connecting to MongoDB
+// Connect to MongoDB and start the server.
 async function startServer() {
   try {
     const mongoUri = process.env.MONGODB_URI;
@@ -108,7 +130,7 @@ async function startServer() {
 
     if (!jwtSecret || jwtSecret.length < 32) {
       throw new Error(
-        "JWT_SECRET must be configured in backend/.env and contain at least 32 characters."
+        "JWT_SECRET must contain at least 32 characters."
       );
     }
 
@@ -116,13 +138,17 @@ async function startServer() {
 
     console.log("MongoDB Atlas connected successfully.");
 
-    app.listen(PORT, () => {
-      console.log(`CampusConnect backend running on http://localhost:${PORT}`);
-      console.log(`Gallery API: http://localhost:${PORT}/api/gallery`);
-      console.log(`Uploaded images: http://localhost:${PORT}/uploads/`);
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(
+        `CampusConnect backend running on port ${PORT}`
+      );
+      console.log("CORS allowed origins:", allowedOrigins);
     });
   } catch (error) {
-    console.error("Failed to start CampusConnect backend:", error.message);
+    console.error(
+      "Failed to start CampusConnect backend:",
+      error.message
+    );
     process.exit(1);
   }
 }
